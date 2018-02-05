@@ -7,6 +7,8 @@ import { perc, setTopLeft, setTransform } from "./utils";
 import classNames from "classnames";
 import type { Element as ReactElement, Node as ReactNode } from "react";
 
+import type { LayoutItem } from "./utils";
+
 import type {
   ReactDraggableCallbackData,
   GridDragEvent,
@@ -48,16 +50,12 @@ type Props = {
   cancel: string,
   handle: string,
 
-  x: number,
-  y: number,
-  w: number,
-  h: number,
+  layout: LayoutItem,
 
   minW: number,
   maxW: number,
   minH: number,
   maxH: number,
-  i: string,
 
   onDrag?: GridItemCallback<GridDragEvent>,
   onDragStart?: GridItemCallback<GridDragEvent>,
@@ -83,43 +81,36 @@ export default class GridItem extends React.Component<Props, State> {
     maxRows: PropTypes.number.isRequired,
     containerPadding: PropTypes.array.isRequired,
 
-    // These are all in grid units
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired,
-    w: PropTypes.number.isRequired,
-    h: PropTypes.number.isRequired,
+    layout: PropTypes.any,
 
     // All optional
     minW: function(props: Props, propName: string) {
       const value = props[propName];
       if (typeof value !== "number") return new Error("minWidth not Number");
-      if (value > props.w || value > props.maxW)
+      if (value > props.layout.w || value > props.maxW)
         return new Error("minWidth larger than item width/maxWidth");
     },
 
     maxW: function(props: Props, propName: string) {
       const value = props[propName];
       if (typeof value !== "number") return new Error("maxWidth not Number");
-      if (value < props.w || value < props.minW)
+      if (value < props.layout.w || value < props.minW)
         return new Error("maxWidth smaller than item width/minWidth");
     },
 
     minH: function(props: Props, propName: string) {
       const value = props[propName];
       if (typeof value !== "number") return new Error("minHeight not Number");
-      if (value > props.h || value > props.maxH)
+      if (value > props.layout.h || value > props.maxH)
         return new Error("minHeight larger than item height/maxHeight");
     },
 
     maxH: function(props: Props, propName: string) {
       const value = props[propName];
       if (typeof value !== "number") return new Error("maxHeight not Number");
-      if (value < props.h || value < props.minH)
+      if (value < props.layout.h || value < props.minH)
         return new Error("maxHeight smaller than item height/minHeight");
     },
-
-    // ID is nice to have for callbacks
-    i: PropTypes.string.isRequired,
 
     // Functions
     onDragStop: PropTypes.func,
@@ -224,7 +215,9 @@ export default class GridItem extends React.Component<Props, State> {
    * @return {Object} x and y in grid units.
    */
   calcXY(top: number, left: number): { x: number, y: number } {
-    const { margin, cols, rowHeight, w, h, maxRows } = this.props;
+    const { margin, cols, rowHeight, layout, maxRows } = this.props;
+    const { w, h } = layout;
+
     const colWidth = this.calcColWidth();
 
     // left = colWidth * x + margin * (x + 1)
@@ -257,7 +250,8 @@ export default class GridItem extends React.Component<Props, State> {
     height: number,
     width: number
   }): { w: number, h: number } {
-    const { margin, maxRows, cols, rowHeight, x, y } = this.props;
+    const { margin, maxRows, cols, rowHeight, layout } = this.props;
+    const { x, y } = layout;
     const colWidth = this.calcColWidth();
 
     // width = colWidth * w - (margin * (w - 1))
@@ -335,7 +329,8 @@ export default class GridItem extends React.Component<Props, State> {
     child: ReactElement<any>,
     position: Position
   ): ReactElement<any> {
-    const { cols, x, minW, minH, maxW, maxH } = this.props;
+    const { cols, minW, minH, maxW, maxH, layout } = this.props;
+    const { x } = layout;
 
     // This is the max possible width - doesn't go to infinity because of the width of the window
     const maxWidth = this.calcPosition(0, 0, cols - x, 0).width;
@@ -415,7 +410,11 @@ export default class GridItem extends React.Component<Props, State> {
 
       const { x, y } = this.calcXY(newPosition.top, newPosition.left);
 
-      return handler.call(this, this.props.i, x, y, { e, node, newPosition });
+      return handler.call(this, this.props.layout.i, x, y, {
+        e,
+        node,
+        newPosition
+      });
     };
   }
 
@@ -434,7 +433,8 @@ export default class GridItem extends React.Component<Props, State> {
     ) => {
       const handler = this.props[handlerName];
       if (!handler) return;
-      const { cols, x, i, maxW, minW, maxH, minH } = this.props;
+      const { cols, maxW, minW, maxH, minH, layout } = this.props;
+      const { x, i } = layout;
 
       // Get new XY
       let { w, h } = this.calcWH(size);
@@ -455,15 +455,9 @@ export default class GridItem extends React.Component<Props, State> {
   }
 
   render(): ReactNode {
-    const {
-      x,
-      y,
-      w,
-      h,
-      isDraggable,
-      isResizable,
-      useCSSTransforms
-    } = this.props;
+    const { layout, isDraggable, isResizable, useCSSTransforms } = this.props;
+
+    const { x, y, w, h } = layout;
 
     const pos = this.calcPosition(x, y, w, h, this.state);
     const child = React.Children.only(this.props.children);
