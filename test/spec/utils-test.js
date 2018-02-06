@@ -6,7 +6,7 @@ import {
   collides,
   validateLayout,
   moveElement,
-  compact,
+  compactNew,
   sortLayoutItemsByRowCol
 } from "../../lib/utils.js";
 /*:: import type { Layout } from "../../lib/utils.js"; */
@@ -270,7 +270,8 @@ describe("moveElement", () => {
 describe("compact vertical", () => {
   it("Removes empty vertical space above item", () => {
     const layout = [{ i: "1", x: 0, y: 1, w: 1, h: 1 }];
-    assertDeepEqualStrip(compact(layout, "vertical", 10), [
+    compactNew(layout, "vertical", 10);
+    assertDeepEqualStrip(layout, [
       { i: "1", x: 0, y: 0, w: 1, h: 1, moved: false, static: false }
     ]);
   });
@@ -280,7 +281,9 @@ describe("compact vertical", () => {
       { x: 0, y: 0, w: 1, h: 5, i: "1" },
       { x: 0, y: 1, w: 1, h: 1, i: "2" }
     ];
-    assertDeepEqualStrip(compact(layout, "vertical", 10), [
+
+    compactNew(layout, "vertical", 10);
+    assertDeepEqualStrip(layout, [
       { x: 0, y: 0, w: 1, h: 5, i: "1", moved: false, static: false },
       { x: 0, y: 5, w: 1, h: 1, i: "2", moved: false, static: false }
     ]);
@@ -295,7 +298,8 @@ describe("compact vertical", () => {
       { x: 5, y: 3, w: 1, h: 1, i: "5", static: true }
     ];
 
-    assertDeepEqualStrip(compact(layout, "vertical", 10), [
+    compactNew(layout, "vertical", 10);
+    assertDeepEqualStrip(layout, [
       { x: 0, y: 0, w: 2, h: 5, i: "1", moved: false, static: false },
       { x: 0, y: 5, w: 10, h: 1, i: "2", moved: false, static: false },
       { x: 5, y: 6, w: 1, h: 1, i: "3", moved: false, static: false },
@@ -303,23 +307,13 @@ describe("compact vertical", () => {
       { x: 5, y: 3, w: 1, h: 1, i: "5", moved: false, static: true }
     ]);
   });
-
-  it("Clones layout items (does not modify input)", () => {
-    const layout = [
-      { x: 0, y: 0, w: 2, h: 5, i: "1" },
-      { x: 0, y: 0, w: 10, h: 1, i: "2" }
-    ];
-    const out = compact(layout, "vertical", 10);
-    layout.forEach(item => {
-      assert(!out.includes(item));
-    });
-  });
 });
 
 describe("compact horizontal", () => {
   it("compact horizontal should remove empty horizontal space to left of item", () => {
     const layout = [{ x: 5, y: 5, w: 1, h: 1, i: "1" }];
-    assertDeepEqualStrip(compact(layout, "horizontal", 10), [
+    compactNew(layout, "horizontal", 10);
+    assertDeepEqualStrip(layout, [
       { x: 0, y: 0, w: 1, h: 1, i: "1", moved: false, static: false }
     ]);
   });
@@ -329,7 +323,8 @@ describe("compact horizontal", () => {
       { y: 0, x: 0, h: 1, w: 5, i: "1" },
       { y: 0, x: 1, h: 1, w: 1, i: "2" }
     ];
-    assertDeepEqualStrip(compact(layout, "horizontal", 10), [
+    compactNew(layout, "horizontal", 10);
+    assertDeepEqualStrip(layout, [
       { y: 0, x: 0, h: 1, w: 5, i: "1", moved: false, static: false },
       { y: 0, x: 5, h: 1, w: 1, i: "2", moved: false, static: false }
     ]);
@@ -343,7 +338,8 @@ describe("compact horizontal", () => {
       { y: 5, x: 2, h: 1, w: 1, i: "4" },
       { y: 5, x: 2, h: 1, w: 1, i: "5", static: true }
     ];
-    assertDeepEqualStrip(compact(layout, "horizontal", 10), [
+    compactNew(layout, "horizontal", 10);
+    assertDeepEqualStrip(layout, [
       { y: 0, x: 0, h: 2, w: 5, i: "1", moved: false, static: false },
       { y: 0, x: 5, h: 10, w: 1, i: "2", moved: false, static: false },
       { y: 5, x: 6, h: 1, w: 1, i: "3", moved: false, static: false },
