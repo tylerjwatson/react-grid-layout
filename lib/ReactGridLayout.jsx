@@ -247,6 +247,12 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     ]);
   }
 
+  componentWillReceiveProps(nextProps: Props) {
+    if (nextProps.layout.length !== this.props.layout.length) {
+      compactNew(nextProps.layout, nextProps.compactType, nextProps.cols);
+    }
+  }
+
   componentDidMount() {
     this.setState({ mounted: true });
 
