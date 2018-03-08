@@ -275,7 +275,10 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       // what is in props.
       newLayoutBase = this.state.layout;
     }
-
+    // React to changes to width
+    if (nextProps.width !== this.props.width) {
+      newLayoutBase = this.state.layout;
+    }
     // We need to regenerate the layout.
     if (newLayoutBase) {
       const newLayout = synchronizeLayoutWithChildren(
@@ -453,14 +456,17 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     // to find collisions faster
     let hasCollisions;
     if (preventCollision) {
-      const collisions = getAllCollisions(layout, { ...l, w, h }).filter((layoutItem) => layoutItem.i !== l.i);
+      const collisions = getAllCollisions(layout, { ...l, w, h }).filter(
+        layoutItem => layoutItem.i !== l.i
+      );
       hasCollisions = collisions.length > 0;
 
       // If we're colliding, we need adjust the placeholder.
       if (hasCollisions) {
         // adjust w && h to maximum allowed space
-        let leastX = Infinity, leastY = Infinity;
-        collisions.forEach((layoutItem) => {
+        let leastX = Infinity,
+          leastY = Infinity;
+        collisions.forEach(layoutItem => {
           if (layoutItem.x > l.x) leastX = Math.min(leastX, layoutItem.x);
           if (layoutItem.y > l.y) leastY = Math.min(leastY, layoutItem.y);
         });
